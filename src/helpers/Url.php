@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Gotyefrid\MelkoframeworkCore\helpers;
 
 
+use Gotyefrid\MelkoframeworkCore\App;
+
 class Url
 {
     public static function getDomain(bool $withProtocol = true): string
@@ -45,8 +47,8 @@ class Url
 
     public static function toRoute(string $path, array $params = []): string
     {
-        if (app()->isGetParamRouter) {
-            $params = array_merge([app()->getRequest()->routeParameterName => $path], $params);
+        if (App::get()->isGetParamRouter) {
+            $params = array_merge([App::get()->getRequest()->routeParameterName => $path], $params);
 
             return '/' . '?' . http_build_query($params);
         }

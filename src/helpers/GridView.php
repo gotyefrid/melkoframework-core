@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Gotyefrid\MelkoframeworkCore\helpers;
 
+use Gotyefrid\MelkoframeworkCore\App;
 use Gotyefrid\MelkoframeworkCore\Model;
 use DomainException;
 use Throwable;
@@ -193,14 +194,14 @@ class GridView
     {
         $params = $_GET;
         $params['page'] = $page;
-        unset($params[app()->getRequest()->routeParameterName]);
+        unset($params[App::get()->getRequest()->routeParameterName]);
 
         if ($this->perPageSelector) {
             $itemsPerPage = $this->getItemsPerPage();
             $params['itemsPerPage'] = $itemsPerPage;
         }
 
-        return Url::toRoute(app()->getRequest()->getRoute(), $params);
+        return Url::toRoute(App::get()->getRequest()->getRoute(), $params);
     }
 
     public function getCurrentUrlWithoutParams(array $excludeParams = []): string
@@ -209,15 +210,15 @@ class GridView
         foreach ($excludeParams as $param) {
             unset($params[$param]);
         }
-        unset($params[app()->getRequest()->routeParameterName]);
+        unset($params[App::get()->getRequest()->routeParameterName]);
 
-        return Url::toRoute(app()->getRequest()->getRoute(), $params);
+        return Url::toRoute(App::get()->getRequest()->getRoute(), $params);
     }
 
     public function getActionsColumnHtml(int $id): string
     {
-        $updateUrl = Url::toRoute(app()->getRequest()->getController() . '/update', ['id' => $id]);
-        $deleteUrl = Url::toRoute(app()->getRequest()->getController() . '/delete', ['id' => $id]);
+        $updateUrl = Url::toRoute(App::get()->getRequest()->getController() . '/update', ['id' => $id]);
+        $deleteUrl = Url::toRoute(App::get()->getRequest()->getController() . '/delete', ['id' => $id]);
 
         return <<<HTML
         <div class="action-buttons">

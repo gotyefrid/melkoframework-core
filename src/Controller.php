@@ -11,15 +11,19 @@ abstract class Controller
 {
     public static string $title = 'Заголовок';
 
-    public string $layout = 'main';
+    /** @var string|false */
+    public $layout = 'main';
     public string $titlePage = '';
 
     public AbstractRequest $request;
 
     public function __construct()
     {
-        $this->request = app()->getRequest();
+        $this->request = App::get()->getRequest();
     }
+
+    abstract function getViewsDir(): string;
+    abstract function getLayoutsDir(): string;
 
     /**
      * @throws NotFoundException
@@ -27,16 +31,31 @@ abstract class Controller
      */
     public function render(string $view, array $params = []): string
     {
-        $path = __DIR__ . '/../src/views/' . $this->request->getController() . '/' . $view . '.php';
+        $sep = DIRECTORY_SEPARATOR;
+        $path = implode($sep, [
+            rtrim($this->getViewsDir(), $sep),
+            $this->request->getController(),
+            $view . '.php'
+        ]);
 
         if (!file_exists($path)) {
-            $showPath = '../views/' . $this->request->getController() . '/' . $view . '.php';
-            throw new NotFoundException("Файл вида ($showPath) не найден");
+            throw new NotFoundException("View File ($path) not found");
         }
 
         $content = Renderer::render($path, $params);
 
-        $layoutPath = __DIR__ . '/../src/views/layouts/' . $this->layout . '.php';
+        if ($this->layout === false) {
+            return $content;
+        }
+
+        $layoutPath = implode($sep, [
+            $this->getLayoutsDir(),
+            $this->layout . '.php'
+        ]);
+
+        if (!file_exists($layoutPath)) {
+            throw new NotFoundException("Layout File ($layoutPath) not found");
+        }
 
         return Renderer::render($layoutPath, ['content' => $content, 'title' => $this->titlePage ?: static::$title]);
     }
@@ -48,11 +67,15 @@ abstract class Controller
      */
     public function renderPartial(string $view, array $params = []): string
     {
-        $path = __DIR__ . '/../src/views/' . $this->request->getController() . '/' . $view . '.php';
+        $sep = DIRECTORY_SEPARATOR;
+        $path = implode($sep, [
+            rtrim($this->getViewsDir(), $sep),
+            $this->request->getController(),
+            $view . '.php'
+        ]);
 
         if (!file_exists($path)) {
-            $showPath = '../views/' . $this->request->getController() . '/' . $view . '.php';
-            throw new NotFoundException("Файл вида ($showPath) не найден");
+            throw new NotFoundException("Файл вида ($path) не найден");
         }
 
         return Renderer::render($path, $params);
@@ -75,7 +98,7 @@ abstract class Controller
         }
 
         // Если роутинг через GET-параметр, добавляем параметр маршрута
-        if (app()->isGetParamRouter) {
+        if (App::get()->isGetParamRouter) {
             $params = array_merge([$this->request->routeParameterName => $route], $params);
             $url = '/?' . http_build_query($params);
         } else {
