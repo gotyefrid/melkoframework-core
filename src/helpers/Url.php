@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gotyefrid\MelkoframeworkCore\helpers;
 
-
 use Gotyefrid\MelkoframeworkCore\App;
 
 class Url
@@ -13,14 +12,12 @@ class Url
         $host = $_SERVER['HTTP_HOST'];
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
 
-        // Определяем протокол
         if ($withProtocol) {
             $domain = $protocol . '://' . $host;
         } else {
             $domain = $host;
         }
 
-        // Добавляем порт, если он не является стандартным
         $port = $_SERVER['SERVER_PORT'];
 
         $isNonStandardPort = ($protocol === 'http' && $port != 80) || ($protocol === 'https' && $port != 443);
@@ -35,6 +32,14 @@ class Url
 
     public static function getCurrentUrl(bool $withQuery = true): string
     {
+        if (App::get()->isGetParamRouter) {
+            $param = [
+                App::get()->getRequest()->routeParameterName => App::get()->getRequest()->getRoute()
+            ];
+
+            return self::getDomain() . '?' . http_build_query($param);
+        }
+
         $url = self::getDomain() . $_SERVER['REQUEST_URI'];
 
         if ($withQuery === false) {
