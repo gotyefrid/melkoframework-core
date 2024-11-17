@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gotyefrid\MelkoframeworkCore;
 
 use DomainException;
-use Exception;
 use PDO;
 use Throwable;
 
@@ -14,7 +13,7 @@ class App
     private AbstractRequest $request;
     private PDO $pdo;
     private AbstractErrorHandler $errorHandler;
-    private static ?self $instance = null;
+    private static self $instance;
 
 
     public function __construct(
@@ -28,16 +27,19 @@ class App
         $this->pdo = $pdo;
         $this->errorHandler = $errorHandler;
         $this->isGetParamRouter = $isGetParamRouter;
-        self::$instance = $this;
+        static::$instance = $this;
     }
 
-    public static function get(): self
+    /**
+     * @return static
+     */
+    public static function get(): App
     {
-        if (!self::$instance) {
+        if (!static::$instance) {
             throw new DomainException('App instance does not exist');
         }
 
-        return self::$instance;
+        return static::$instance;
     }
 
     /**
